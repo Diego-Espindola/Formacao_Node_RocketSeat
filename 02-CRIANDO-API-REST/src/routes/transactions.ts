@@ -5,6 +5,17 @@ import { knex } from '../database'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export async function transactionsRoutes(app: FastifyInstance) {
+    //tudo que eu registrar nesse contexto, mesmo que global, vai valer pra todas as rotas dentro desse contexto
+    //, dentro desse plugin.
+    // ou seja, se eu criar outro arquivo de rotas, tudo que tiver dentro desse plugin globalmente, não vai afetar os outros routes..
+    //  por isso agora vamos fazer um app addHook
+
+    app.addHook('preHandler', async (request, reply) => {
+        //este é o melhor local pra fazer a validação global.. poderia ser uma função e ser chamada aqui
+    })
+
+    // se eu criar outra rota e o handler ser global, as outras rotas não recebem.. ele deveria ser chamado daí direto no server..
+
     app.get(
         '/',
         {
