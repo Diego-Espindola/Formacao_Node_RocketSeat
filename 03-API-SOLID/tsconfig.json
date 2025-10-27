@@ -11,7 +11,8 @@
     "moduleResolution": "nodenext",
     "baseUrl": "./",
     "paths": {
-        "@/*": ["./src/*"]
+        "@/*": ["./src/*"],
+        "@/env": ["./src/env"]
     },
     "target": "es2020",
     "esModuleInterop": true,
