@@ -9,7 +9,8 @@
     "start": "node build/server.js",
     "build": "tsup src --out-dir build --format esm",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@rocketseat/eslint-config": "2.2.2",
     "@types/node": "24.8.0",
+    "@vitest/coverage-v8": "4.0.4",
     "eslint": "8.57.1",
     "prisma": "6.17.1",
     "tsup": "8.5.0",
