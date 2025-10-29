@@ -10,7 +10,8 @@
     "build": "tsup src --out-dir build --format esm",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "@rocketseat/eslint-config": "2.2.2",
     "@types/node": "24.8.0",
     "@vitest/coverage-v8": "4.0.4",
+    "@vitest/ui": "4.0.5",
     "eslint": "8.57.1",
     "prisma": "6.17.1",
     "tsup": "8.5.0",
