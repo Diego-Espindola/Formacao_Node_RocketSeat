@@ -3,18 +3,27 @@ import { Prisma } from 'generated/prisma/index.js';
 import type { IUsersRepository } from '../users-repository.interface.js';
 
 
-export class PrismaUsersRepository implements IUsersRepository{
-    public async create(data: Prisma.UserCreateInput) {
-        const user = await prisma.user.create({ data });
+export class PrismaUsersRepository implements IUsersRepository {
+  public async findById(id: string) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    })
 
-        return user;
-    }
+    return user
+  }
+  public async create(data: Prisma.UserCreateInput) {
+    const user = await prisma.user.create({ data });
 
-    public async findUniqueUserByEmail(email: string) {
-        return await prisma.user.findUnique({
-            where: {
-                email,
-            }
-        });
-    }
+    return user;
+  }
+
+  public async findUniqueUserByEmail(email: string) {
+    return await prisma.user.findUnique({
+      where: {
+        email,
+      }
+    });
+  }
 }

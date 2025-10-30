@@ -1,4 +1,4 @@
-import { InMemoryUsersRepository } from '../repositories/in-memory/in-memory-users.repository.js'
+import type { IUsersRepository } from '../repositories/users-repository.interface.js'
 import type { User } from 'generated/prisma/index.js'
 import { ResourceNotFoundError } from './errors/resource-not-found-error.js'
 
@@ -11,7 +11,7 @@ interface GetUserProfileUseCaseResponse {
 }
 
 export class GetUserProfileUseCase {
-  constructor(private usersRepository: InMemoryUsersRepository) {}
+  constructor(private usersRepository: IUsersRepository) {}
 
   async execute({
     userId,
