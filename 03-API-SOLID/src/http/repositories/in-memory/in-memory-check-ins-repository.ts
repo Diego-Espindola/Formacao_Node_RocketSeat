@@ -1,6 +1,7 @@
 import type { ICheckInsRepository } from '../check-ins-repository.interface.js'
 import { Prisma, type CheckIn } from 'generated/prisma/index.js'
 import { randomUUID } from 'node:crypto'
+import dayjs from 'dayjs'
 
 export class InMemoryCheckInsRepository implements ICheckInsRepository {
   public items: CheckIn[] = []
