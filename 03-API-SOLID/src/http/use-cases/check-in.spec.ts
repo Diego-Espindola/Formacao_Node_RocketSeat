@@ -3,6 +3,8 @@ import { expect, describe, it, vi, afterEach, beforeEach } from 'vitest'
 import { CheckInUseCase } from './check-in.js'
 import { InMemoryGymsRepository } from '../repositories/in-memory/in-memory-gyms-repository.js'
 import { Decimal } from 'generated/prisma/runtime/library.js'
+import { MaxDistanceError } from './errors/max-distance-error.js'
+import { MaxNumberOfCheckInsError } from './errors/max-number-of-check-ins-error.js'
 
 
 let gymsRepository: InMemoryGymsRepository
@@ -10,12 +12,12 @@ let checkInsRepository: InMemoryCheckInsRepository
 let sut: CheckInUseCase
 
 describe('Check-in Use Case', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     checkInsRepository = new InMemoryCheckInsRepository()
     gymsRepository = new InMemoryGymsRepository()
     sut = new CheckInUseCase(checkInsRepository, gymsRepository)
 
-    gymsRepository.items.push({
+    gymsRepository.create({
       id: 'gym-01',
       title: 'JavaScript Gym',
       description: '',
@@ -59,7 +61,7 @@ describe('Check-in Use Case', () => {
         userLatitude: -27.2092052,
         userLongitude: -49.6401091,
       }),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toBeInstanceOf(MaxNumberOfCheckInsError)
   })
 
   it('should be able to check in twice but in different days', async () => {
@@ -86,7 +88,7 @@ describe('Check-in Use Case', () => {
 
   it('should not be able to check in on distant gym', async () => {
 
-    gymsRepository.items.push({
+    await gymsRepository.create({
       id: 'gym-02-not-checkin',
       title: 'JavaScript Gym',
       description: '',
@@ -102,12 +104,12 @@ describe('Check-in Use Case', () => {
         userLatitude: -27.6187563,
         userLongitude: -48.6286382,
       }),
-    ).rejects.toBeInstanceOf(Error);
+    ).rejects.toBeInstanceOf(MaxDistanceError);
   })
 
   it('should be able to check in on close gym', async () => {
 
-    gymsRepository.items.push({
+    await gymsRepository.create({
       id: 'gym-02-checkin',
       title: 'JavaScript Gym',
       description: '',
