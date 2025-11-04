@@ -1,6 +1,6 @@
 import { type ICheckInsRepository } from "../repositories/check-ins-repository.interface.js"
 import { type CheckIn } from 'generated/prisma/index.js'
-import type { IGymsRepository } from "../repositories/gyms-repository.interface copy.js"
+import type { IGymsRepository } from "../repositories/gyms-repository.interface.js"
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.js"
 import { getDistanceBetweenCoordinates } from "../utils/get-distance-between-coordinates.js"
 import { MaxDistanceError } from "./errors/max-distance-error.js"
