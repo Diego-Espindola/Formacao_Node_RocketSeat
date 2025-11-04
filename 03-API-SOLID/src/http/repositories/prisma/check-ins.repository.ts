@@ -3,7 +3,7 @@ import { Prisma, type CheckIn } from 'generated/prisma/index.js';
 import type { ICheckInsRepository } from '../check-ins-repository.interface.js';
 import dayjs from 'dayjs';
 
-export class PrismaUsersRepository implements ICheckInsRepository {
+export class PrismaCheckInsRepository implements ICheckInsRepository {
   public async findById(id: string) {
     const checkIn = await prisma.checkIn.findUnique({
       where: {
