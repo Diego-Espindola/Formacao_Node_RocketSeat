@@ -1,4 +1,4 @@
-import type { User, Prisma } from 'generated/prisma/index.js'
+import type { User, Prisma } from '@prisma/client'
 import type { IUsersRepository } from '../users-repository.interface.js'
 import { randomUUID } from 'node:crypto'
 

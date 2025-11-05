@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { type ICheckInsRepository } from '../repositories/check-ins-repository.interface.js'
 import { ResourceNotFoundError } from './errors/resource-not-found-error.js'
-import { type CheckIn } from 'generated/prisma/index.js'
+import { type CheckIn } from '@prisma/client'
 import { LateCheckInValidationError } from './errors/late-check-in-validation-error.js'
 
 interface ValidateCheckInUseCaseRequest {

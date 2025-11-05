@@ -1,5 +1,5 @@
 import { type ICheckInsRepository } from "../repositories/check-ins-repository.interface.js"
-import { type CheckIn } from 'generated/prisma/index.js'
+import { type CheckIn } from '@prisma/client'
 import type { IGymsRepository } from "../repositories/gyms-repository.interface.js"
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.js"
 import { getDistanceBetweenCoordinates } from "../utils/get-distance-between-coordinates.js"

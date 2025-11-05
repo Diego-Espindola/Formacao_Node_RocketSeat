@@ -1,6 +1,6 @@
 import { getDistanceBetweenCoordinates } from "@/utils/get-distance-between-coordinates.js";
 import type { FindManyNearbyParams, IGymsRepository } from "../gyms-repository.interface.js";
-import { type Gym, Prisma } from "generated/prisma/index.js";
+import { type Gym, Prisma } from "@prisma/client";
 import { randomUUID } from 'node:crypto'
 
 export class InMemoryGymsRepository implements IGymsRepository {

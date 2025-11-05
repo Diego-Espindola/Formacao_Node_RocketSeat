@@ -10,7 +10,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
-          dir: 'src/http',
+          dir: 'src/use-cases',
         }
       },
       {
