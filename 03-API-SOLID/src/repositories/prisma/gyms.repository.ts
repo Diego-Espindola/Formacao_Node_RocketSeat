@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
-import { Prisma, type Gym } from 'generated/prisma/index.js';
+import { Prisma, type Gym } from '@prisma/client';
 import type { FindManyNearbyParams, IGymsRepository } from '../gyms-repository.interface.js';
 import { getDistanceBetweenCoordinates } from '@/utils/get-distance-between-coordinates.js';
 

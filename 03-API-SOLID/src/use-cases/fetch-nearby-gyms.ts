@@ -1,5 +1,5 @@
 import type { IGymsRepository } from '../repositories/gyms-repository.interface.js';
-import type { Gym } from 'generated/prisma/index.js';
+import type { Gym } from '@prisma/client';
 
 
 interface FetchNearbyGymsUseCaseRequest {
