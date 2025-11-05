@@ -1,4 +1,4 @@
-import { prisma } from '../../../lib/prisma.js'
+import { prisma } from '../../lib/prisma.js'
 import { Prisma } from 'generated/prisma/index.js';
 import type { IUsersRepository } from '../users-repository.interface.js';
 

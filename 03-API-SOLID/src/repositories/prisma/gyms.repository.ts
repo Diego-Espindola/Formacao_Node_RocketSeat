@@ -1,7 +1,7 @@
-import { prisma } from '../../../lib/prisma.js'
+import { prisma } from '../../lib/prisma.js'
 import { Prisma, type Gym } from 'generated/prisma/index.js';
 import type { FindManyNearbyParams, IGymsRepository } from '../gyms-repository.interface.js';
-import { getDistanceBetweenCoordinates } from '@/http/utils/get-distance-between-coordinates.js';
+import { getDistanceBetweenCoordinates } from '@/utils/get-distance-between-coordinates.js';
 
 export class PrismaGymsRepository implements IGymsRepository {
   public async findById(id: string) {

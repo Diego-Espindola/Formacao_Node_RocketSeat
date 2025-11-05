@@ -1,6 +1,6 @@
-import { PrismaCheckInsRepository } from "@/http/repositories/prisma/check-ins.repository.js"
+import { PrismaCheckInsRepository } from "@/repositories/prisma/check-ins.repository.js"
 import { CheckInUseCase } from "../check-in.js"
-import { PrismaGymsRepository } from "@/http/repositories/prisma/gyms.repository.js"
+import { PrismaGymsRepository } from "@/repositories/prisma/gyms.repository.js"
 
 export function makeCheckInUseCase() {
   const checkInsRepository = new PrismaCheckInsRepository()

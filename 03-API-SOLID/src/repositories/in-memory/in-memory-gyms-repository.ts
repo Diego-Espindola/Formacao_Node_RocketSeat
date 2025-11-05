@@ -1,4 +1,4 @@
-import { getDistanceBetweenCoordinates } from "@/http/utils/get-distance-between-coordinates.js";
+import { getDistanceBetweenCoordinates } from "@/utils/get-distance-between-coordinates.js";
 import type { FindManyNearbyParams, IGymsRepository } from "../gyms-repository.interface.js";
 import { type Gym, Prisma } from "generated/prisma/index.js";
 import { randomUUID } from 'node:crypto'
