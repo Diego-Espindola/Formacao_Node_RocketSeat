@@ -1,17 +1,18 @@
 {
-  "name": "04-clean-ddd",
+  "name": "04-clean-domain",
   "version": "1.0.0",
   "description": "Design dirigido à domínio",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10"
   }
 }
