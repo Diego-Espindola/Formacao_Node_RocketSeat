@@ -10,6 +10,6 @@ export class Entity<Props> {
 
   constructor(props: Props, id?: string) {
     this.props = props
-    this._id = new UniqueEntityID();
+    this._id = id ?? new UniqueEntityID();
   }
 }
