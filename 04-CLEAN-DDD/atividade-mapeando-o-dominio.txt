@@ -1,0 +1,20 @@
+https://efficient-sloth-d85.notion.site/Atividade-Mapeando-o-dom-nio-38963358ffd74289b824ff73b187165d
+
+Entidades:
+
+- Produto
+- Movimentação de Estoque
+- Venda
+- Alerta de Estoque
+- Ordem de Compra
+- Fornecedor
+- Histórico/Relatórios (agregado)
+
+Casos de uso:
+
+- Gestão de produtos
+- Gestão de estoque
+- Sistema de alertas
+- Relatórios e histórico
+- Geração/gestão de ordens de compra
+- Integração com fornecedores
