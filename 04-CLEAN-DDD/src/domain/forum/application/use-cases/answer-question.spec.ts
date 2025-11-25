@@ -1,7 +1,7 @@
 import { expect, test } from "vitest"
-import { AnswerQuestionUseCase } from "./answer-question"
-import { AnswersRepository } from "@/domain/forum/application/repositories/answers-repository"
-import { Answer } from "@/domain/forum/enterprise/entities/answer"
+import { AnswerQuestionUseCase } from "./answer-question.js"
+import { type AnswersRepository } from "../repositories/answers-repository.js"
+import { Answer } from "@/domain/forum/enterprise/entities/answer.js"
 
 const fakeAnswersRepository: AnswersRepository = {
   create: async (answer: Answer) => {

@@ -1,4 +1,4 @@
-import { Answer } from "@/domain/forum/enterprise/entities/answer"
+import { Answer } from "../../enterprise/entities/answer.js";
 
 export interface AnswersRepository {
   create(answer: Answer): Promise<void>

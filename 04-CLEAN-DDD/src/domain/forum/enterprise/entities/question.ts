@@ -1,7 +1,7 @@
-import { Slug } from "./value-objects/slug"
-import { Entity } from "@/core/entities/entity"
-import { UniqueEntityID } from "@/core/entities/unique-entity-id"
-import { Optional } from "@/core/types/optional"
+import { Slug } from "./value-objects/slug.js"
+import { Entity } from "@/core/entities/entity.js"
+import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
+import { type Optional } from "@/core/entities/types/optional.js"
 import dayjs from "dayjs"
 
 interface QuestionProps {
@@ -71,7 +71,11 @@ export class Question extends Entity<QuestionProps> {
   }
 
   set bestAnswerId(bestAnswerId: UniqueEntityID | undefined) {
-    this.props.bestAnswerId = bestAnswerId
+    if(bestAnswerId){
+      this.props.bestAnswerId = bestAnswerId
+    }else{
+      delete this.props.bestAnswerId
+    }
     this.touch()
   }
 
