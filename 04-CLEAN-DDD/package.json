@@ -5,17 +5,27 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@rocketseat/eslint-config": "^2.2.2",
     "@types/node": "^24.10.1",
+    "@vitest/eslint-plugin": "^1.5.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vitest-globals": "^1.5.0",
+    "globals": "^16.5.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.10"
   },
   "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "dayjs": "^1.11.7"
   }
 }
