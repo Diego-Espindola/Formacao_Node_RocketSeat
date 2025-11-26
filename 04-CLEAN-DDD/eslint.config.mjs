@@ -27,6 +27,7 @@ export default defineConfig([
       globals: {
         ...globals.node,
         ...vitest.environments.env.globals,
+        ...vitest.environments.globals,
       }
     },
     rules: {
