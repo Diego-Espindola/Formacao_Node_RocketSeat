@@ -25,6 +25,6 @@ test('error result', () => {
   const result = doSomething(false)
 
   expect(result).toBeInstanceOf(Left);
-  expect(result.value).toEqual('error');
-  expect(result.isLeft()).toBe(false);
+  expect(result.value).toEqual(10);
+  expect(result.isLeft()).toBe(true);
 });

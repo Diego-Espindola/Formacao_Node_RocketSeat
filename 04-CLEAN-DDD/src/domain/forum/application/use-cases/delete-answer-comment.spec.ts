@@ -3,6 +3,7 @@ import { DeleteAnswerCommentUseCase } from './delete-answer-comment.js'
 import { makeAnswerComment } from 'test/factories/make-answer-comment.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Left } from '@/core/types/either.js'
+import { NotAllowedError } from './errors/not-allowed.error.js'
 
 let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository
 let sut: DeleteAnswerCommentUseCase
@@ -38,6 +39,7 @@ describe('Delete Answer Comment', () => {
       answerCommentId: answerComment.id.toString(),
       authorId: 'author-2',
     });
-    expect(sutResponse).toBeInstanceOf(Left);
+    expect(sutResponse.isLeft()).toBeTruthy();
+    expect(sutResponse.value).toBeInstanceOf(NotAllowedError);
   });
 });
