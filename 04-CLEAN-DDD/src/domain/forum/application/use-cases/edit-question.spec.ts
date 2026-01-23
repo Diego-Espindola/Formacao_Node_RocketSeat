@@ -2,6 +2,7 @@ import { EditQuestionUseCase } from './edit-question.js'
 import { InMemoryQuestionsRepository } from 'test/repositories/in-memory-questions-repository.js'
 import { makeQuestion } from 'test/factories/make-question.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { NotAllowedError } from './errors/not-allowed.error.js'
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository
 let sut: EditQuestionUseCase
@@ -13,48 +14,46 @@ describe('Edit Question', () => {
   })
 
   it('should be able to edit a question', async () => {
-    const question = makeQuestion({
-      authorId: new UniqueEntityID('author-1'),
-    })
-    await inMemoryQuestionsRepository.create(question)
+    const newQuestion = makeQuestion(
+      {
+        authorId: new UniqueEntityID('author-1'),
+      },
+      new UniqueEntityID('question-1'),
+    )
+
+    await inMemoryQuestionsRepository.create(newQuestion)
 
     await sut.execute({
+      questionId: newQuestion.id.toValue(),
       authorId: 'author-1',
-      questionId: question.id.toString(),
-      title: 'Test Title',
-      content: 'Test Content',
+      title: 'Pergunta teste',
+      content: 'Conteúdo teste',
     })
 
     expect(inMemoryQuestionsRepository.items[0]).toMatchObject({
-      title: 'Test Title',
-      content: 'Test Content',
+      title: 'Pergunta teste',
+      content: 'Conteúdo teste',
     })
   })
 
-  it('should not be able to edit a question from another author', async () => {
-    const question = makeQuestion({
-      authorId: new UniqueEntityID('author-1'),
+  it('should not be able to edit a question from another user', async () => {
+    const newQuestion = makeQuestion(
+      {
+        authorId: new UniqueEntityID('author-1'),
+      },
+      new UniqueEntityID('question-1'),
+    )
+
+    await inMemoryQuestionsRepository.create(newQuestion)
+
+    const result = await sut.execute({
+      questionId: newQuestion.id.toValue(),
+      authorId: 'author-2',
+      title: 'Pergunta teste',
+      content: 'Conteúdo teste',
     })
-    await inMemoryQuestionsRepository.create(question)
 
-    await expect(() =>
-      sut.execute({
-        authorId: 'author-2',
-        questionId: question.id.toString(),
-        title: 'Test Title',
-        content: 'Test Content',
-      })
-    ).rejects.toThrow('Not allowed')
-  })
-
-  it('should not be able to edit a non-existing question', async () => {
-    await expect(() =>
-      sut.execute({
-        authorId: 'author-1',
-        questionId: 'non-existing-id',
-        title: 'Test Title',
-        content: 'Test Content',
-      })
-    ).rejects.toThrow('Question not found')
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(NotAllowedError)
   })
 })
