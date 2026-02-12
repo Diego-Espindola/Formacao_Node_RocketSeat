@@ -9,6 +9,7 @@ interface EditQuestionUseCaseRequest {
   questionId: string
   title: string
   content: string
+  attachmentsIds: string[]
 }
 
 type EditQuestionUseCaseResponse = Either<
@@ -21,7 +22,7 @@ type EditQuestionUseCaseResponse = Either<
 export class EditQuestionUseCase {
   constructor(private questionsRepository: QuestionsRepository) {}
 
-  async execute({ authorId, questionId, title, content }: EditQuestionUseCaseRequest): Promise<EditQuestionUseCaseResponse> {
+  async execute({ authorId, questionId, title, content, attachmentsIds }: EditQuestionUseCaseRequest): Promise<EditQuestionUseCaseResponse> {
     const question = await this.questionsRepository.findById(questionId)
 
     if (!question) {
