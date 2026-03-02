@@ -43,7 +43,7 @@ describe('Delete Answer', () => {
   it('should be able to delete a answer and its attachments', async () => {
     const newAnswer = makeAnswer(
       {
-        authorId: new UniqueEntityID('author-1'),
+        authorId: new UniqueEntityID('author-2'),
       },
       new UniqueEntityID('answer-1'),
     )
