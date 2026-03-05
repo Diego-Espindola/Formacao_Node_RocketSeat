@@ -1,6 +1,6 @@
 import type { QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository.js'
-import { NotAllowedError } from './errors/not-allowed.error.js'
-import { ResourceNotFoundError } from './errors/resource-not-found.error.js'
+import { NotAllowedError } from '@/core/errors/errors/not-allowed.error.js'
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found.error.js'
 import { left, right, type Either } from '@/core/types/either.js'
 
 interface DeleteQuestionCommentUseCaseRequest {

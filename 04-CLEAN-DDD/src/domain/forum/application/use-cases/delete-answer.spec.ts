@@ -4,7 +4,7 @@ import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory
 import { makeAnswer } from 'test/factories/make-answer.js'
 import { makeAnswerAttachment } from 'test/factories/make-answer-attachments.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
-import { NotAllowedError } from './errors/not-allowed.error.js'
+import { NotAllowedError } from '@/core/errors/errors/not-allowed.error.js'
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
