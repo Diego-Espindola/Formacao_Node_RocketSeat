@@ -16,6 +16,38 @@ export class DomainEvents {
     }
   }
 
+  public static register(
+    callback: DomainEventCallback,
+    eventClassName: string,
+  ) {
+    const wasEventRegisteredBefore = eventClassName in this.handlersMap
+
+    if (!wasEventRegisteredBefore) {
+      this.handlersMap[eventClassName] = []
+    }
+
+    this.handlersMap[eventClassName]!.push(callback)
+  }
+
+  public static dispatchEventsForAggregate(id: UniqueEntityID) {
+    const aggregate = this.findMarkedAggregateByID(id)
+
+    if (aggregate) {
+      this.dispatchAggregateEvents(aggregate)
+      aggregate.clearEvents()
+      this.removeAggregateFromMarkedDispatchList(aggregate)
+    }
+  }
+
+  public static clearHandlers() {
+    this.handlersMap = {}
+  }
+
+  public static clearMarkedAggregates() {
+    this.markedAggregates = []
+  }
+
+
   private static dispatchAggregateEvents(aggregate: AggregateRoot<any>) {
     aggregate.domainEvents.forEach((event: DomainEvent) => this.dispatch(event))
   }
@@ -32,37 +64,6 @@ export class DomainEvents {
     id: UniqueEntityID,
   ): AggregateRoot<any> | undefined {
     return this.markedAggregates.find((aggregate) => aggregate.id.equals(id))
-  }
-
-  public static dispatchEventsForAggregate(id: UniqueEntityID) {
-    const aggregate = this.findMarkedAggregateByID(id)
-
-    if (aggregate) {
-      this.dispatchAggregateEvents(aggregate)
-      aggregate.clearEvents()
-      this.removeAggregateFromMarkedDispatchList(aggregate)
-    }
-  }
-
-  public static register(
-    callback: DomainEventCallback,
-    eventClassName: string,
-  ) {
-    const wasEventRegisteredBefore = eventClassName in this.handlersMap
-
-    if (!wasEventRegisteredBefore) {
-      this.handlersMap[eventClassName] = []
-    }
-
-    this.handlersMap[eventClassName]!.push(callback)
-  }
-
-  public static clearHandlers() {
-    this.handlersMap = {}
-  }
-
-  public static clearMarkedAggregates() {
-    this.markedAggregates = []
   }
 
   private static dispatch(event: DomainEvent) {
