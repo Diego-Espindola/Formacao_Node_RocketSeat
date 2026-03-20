@@ -3,13 +3,13 @@ import { type Either, right } from '@/core/types/either.js'
 import { Notification } from '../../enterprise/entities/notification.js'
 import { type NotificationsRepository } from '../repositories/notifications-repository.js'
 
-interface SendNotificationUseCaseRequest {
+export interface SendNotificationUseCaseRequest {
   recipientId: string
   title: string
   content: string
 }
 
-type SendNotificationUseCaseResponse = Either<
+export type SendNotificationUseCaseResponse = Either<
   null,
   {
     notification: Notification
