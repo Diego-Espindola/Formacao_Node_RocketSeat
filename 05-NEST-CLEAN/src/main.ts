@@ -1,3 +1,4 @@
+import 'tsconfig-paths/register';
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
