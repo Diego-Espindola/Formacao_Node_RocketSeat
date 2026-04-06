@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-config({ path: resolve(__dirname, '../.env') });
+config({ path: resolve(process.cwd(), '.env') });
 
 function resolvePort(): number {
   const parsed = Number(process.env.PORT);
