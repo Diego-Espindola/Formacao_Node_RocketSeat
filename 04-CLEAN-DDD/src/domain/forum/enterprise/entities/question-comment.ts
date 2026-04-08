@@ -11,7 +11,7 @@ export class QuestionComment extends Comment<QuestionCommentProps> {
   get questionId() {
     return this.props.questionId;
   }
-
+  //TODO: Para question comment e para answer comment -> enviar notificação dizendo que foi feito um comentário.
   static create(
     props: Optional<QuestionCommentProps, 'createdAt'>,
     id?: UniqueEntityID,
