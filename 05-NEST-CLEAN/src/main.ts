@@ -1,23 +1,17 @@
 import 'tsconfig-paths/register';
-import { config } from 'dotenv';
-import { resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { Env } from './env';
 
-config({ path: resolve(process.cwd(), '.env') });
-
-function resolvePort(): number {
-  const parsed = Number(process.env.PORT);
-  if (Number.isFinite(parsed) && parsed > 0) {
-    return parsed;
-  }
-  throw new Error('Invalid or missing PORT environment variable.');
-}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     // logger: false
   });
-  await app.listen(resolvePort());
+
+  const configService = app.get<ConfigService<Env, true>>(ConfigService)
+  const port = configService.get('PORT', { infer: true })
+  await app.listen(port);
 }
 bootstrap();
