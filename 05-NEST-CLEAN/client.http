@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:{{$dotenv PORT}}
+
+# @name create_account
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+
+{  
+    "name": "Diego Espindola",  
+    "email": "diego@gmail.com.br",  
+    "password": "123456"
+}
+
+###
+# @name authenticate
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{ 
+    "email": "diego@gmail.com.br",  
+    "password": "123456"
+}
