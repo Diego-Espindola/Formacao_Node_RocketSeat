@@ -1,0 +1,63 @@
+<div class="py-20 bg-white px-4">
+  <div class="container mx-auto max-w-5xl">
+    <h2 class="text-4xl font-serif text-dark text-center mb-16" data-aos="fade-up">Nossa História</h2>
+
+    <div class="flex flex-col md:flex-row items-center gap-8 mb-16" data-aos="fade-up">
+      <div class="md:w-1/2 w-full">
+        <app-story-photo-collage [fotos]="primeiroEncontroFotos" />
+      </div>
+      <div class="md:w-1/2">
+        <h3 class="text-2xl font-serif text-rose-600 mb-4">O Primeiro Encontro</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Tudo começou em um dia de chuva na faculdade... (Insira o texto da história aqui. Use parágrafos curtos para facilitar a leitura no celular).
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row-reverse items-center gap-8" data-aos="fade-up">
+      <div class="md:w-1/2">
+        <img
+          [src]="pedidoFoto.src"
+          [alt]="pedidoFoto.alt"
+          (click)="openLightbox(pedidoFoto)"
+          (keyup.enter)="openLightbox(pedidoFoto)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'Ampliar: ' + pedidoFoto.alt"
+          class="w-full rounded-2xl shadow-lg object-cover h-80 cursor-pointer transition hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+        />
+      </div>
+      <div class="md:w-1/2">
+        <h3 class="text-2xl font-serif text-mint-600 mb-4">O Pedido</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Durante nossa viagem para a serra, aconteceu a maior surpresa de todas... (Continue a história do casal).
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (lightbox) {
+  <div
+    class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="lightbox.alt"
+    (click)="closeLightbox()"
+  >
+    <button
+      type="button"
+      (click)="closeLightbox(); $event.stopPropagation()"
+      class="absolute top-6 right-6 z-[101] text-white text-5xl font-light leading-none hover:text-rose-200 transition cursor-pointer"
+      aria-label="Fechar"
+    >
+      &times;
+    </button>
+    <img
+      [src]="lightbox.src"
+      [alt]="lightbox.alt"
+      (click)="$event.stopPropagation()"
+      class="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
+    />
+  </div>
+}

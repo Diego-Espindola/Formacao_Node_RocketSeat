@@ -1,0 +1,45 @@
+<div class="grid grid-cols-2 gap-3 h-80 md:h-96 min-h-0">
+  @for (foto of fotos; track foto.src; let i = $index) {
+    <div class="min-h-0" [class.row-span-2]="i === 0">
+      <img
+        [src]="foto.src"
+        [alt]="foto.alt"
+        (click)="openLightbox(foto)"
+        (keyup.enter)="openLightbox(foto)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Ampliar: ' + foto.alt"
+        class="w-full h-full object-cover cursor-pointer transition hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+        [class.rounded-2xl]="i === 0"
+        [class.shadow-lg]="i === 0"
+        [class.rounded-xl]="i !== 0"
+        [class.shadow-md]="i !== 0"
+      />
+    </div>
+  }
+</div>
+
+@if (lightbox) {
+  <div
+    class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="lightbox.alt"
+    (click)="closeLightbox()"
+  >
+    <button
+      type="button"
+      (click)="closeLightbox(); $event.stopPropagation()"
+      class="absolute top-6 right-6 z-[101] text-white text-5xl font-light leading-none hover:text-rose-200 transition cursor-pointer"
+      aria-label="Fechar"
+    >
+      &times;
+    </button>
+    <img
+      [src]="lightbox.src"
+      [alt]="lightbox.alt"
+      (click)="$event.stopPropagation()"
+      class="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
+    />
+  </div>
+}
