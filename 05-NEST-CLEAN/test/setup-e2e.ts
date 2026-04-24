@@ -36,7 +36,6 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await new Promise(resolve => setTimeout(resolve, 5000))
   await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaId}" CASCADE`)
   await prisma.$disconnect()
 })
