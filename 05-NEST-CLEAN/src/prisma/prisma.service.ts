@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from 'prisma/generated/prisma/client.js';
+import { createPrismaPgAdapter } from '@/prisma/create-prisma-pg-adapter';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
@@ -10,7 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
       throw new Error('DATABASE_URL is not set');
     }
     super({
-      adapter: new PrismaPg(url),
+      adapter: createPrismaPgAdapter(url),
       log: ['warn', 'error'],
     });
   }

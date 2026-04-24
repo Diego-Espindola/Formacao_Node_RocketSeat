@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import { randomUUID } from 'node:crypto'
 import { execSync } from 'node:child_process'
-import { PrismaPg } from '@prisma/adapter-pg'
+import { createPrismaPgAdapter } from '@/prisma/create-prisma-pg-adapter'
 import { PrismaClient } from 'prisma/generated/prisma/client'
 
 let prisma: PrismaClient
@@ -25,12 +25,10 @@ beforeAll(async () => {
   const databaseURL = generateUniqueDatabaseURL(schemaId)
 
   process.env.DATABASE_URL = databaseURL
-
   prisma = new PrismaClient({
-    adapter: new PrismaPg(databaseURL),
+    adapter: createPrismaPgAdapter(databaseURL),
     log: ['warn', 'error'],
   })
-
   execSync('npx prisma migrate deploy', {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: databaseURL },
@@ -38,6 +36,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  await new Promise(resolve => setTimeout(resolve, 5000))
   await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaId}" CASCADE`)
   await prisma.$disconnect()
 })
+
