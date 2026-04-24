@@ -5,13 +5,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { PrismaService } from '@/prisma/prisma.service'
 import { hash } from 'bcryptjs'
 import { z } from 'zod'
-import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
-import { CurrentUser } from 'src/auth/current-user.decorator'
-import { type UserTokenPayload } from 'src/auth/jwt.strategy'
+import { ZodValidationPipe } from '@/pipes/zod-validation-pipe'
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard'
+import { CurrentUser } from '@/auth/current-user.decorator'
+import { type UserTokenPayload } from '@/auth/jwt.strategy'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
