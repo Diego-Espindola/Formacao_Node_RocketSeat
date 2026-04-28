@@ -29,6 +29,7 @@
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "bcryptjs": "^3.0.3",
+    "dayjs": "^1.11.20",
     "dotenv": "^17.3.1",
     "passport-jwt": "^4.0.1",
     "pg": "^8.20.0",
@@ -39,6 +40,7 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
