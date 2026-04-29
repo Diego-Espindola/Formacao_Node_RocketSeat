@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import { randomUUID } from 'node:crypto'
 import { execSync } from 'node:child_process'
-import { createPrismaPgAdapter } from '@/infra/prisma/create-prisma-pg-adapter'
+import { createPrismaPgAdapter } from '@/infra/database/prisma/create-prisma-pg-adapter'
 import { PrismaClient } from 'prisma/generated/prisma/client'
 
 let prisma: PrismaClient
