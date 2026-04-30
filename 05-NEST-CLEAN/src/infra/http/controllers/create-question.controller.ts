@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -37,11 +38,15 @@ export class CreateQuestionController {
     const { title, content } = body
     const userId = user.sub
     
-    await this.createQuestionUseCase.execute({
+    const result = await this.createQuestionUseCase.execute({
       authorId: userId,
       title,
       content,
       attachmentsIds: [],
     })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
   }
 }
