@@ -16,6 +16,10 @@ lerna-debug.log*
 .DS_Store
 
 # Tests
+# Emissão acidental de tsc em `test/`: o Vitest pode preferir o `.js` ao `.ts` e falhar nos aliases `@/`.
+test/**/*.js
+test/**/*.js.map
+test/**/*.d.ts
 /coverage
 /.nyc_output
 
