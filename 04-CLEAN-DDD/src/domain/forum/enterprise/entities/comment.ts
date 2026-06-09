@@ -1,3 +1,4 @@
+import { AggregateRoot } from "@/core/entities/aggregate-root.js";
 import { Entity } from "@/core/entities/entity.js";
 import type { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 
@@ -9,7 +10,7 @@ export interface CommentProps {
     updatedAt?: Date;
 }
 
-export abstract class Comment<Props extends CommentProps> extends Entity<Props> {
+export abstract class Comment<Props extends CommentProps> extends AggregateRoot<Props> {
     get authorId() {
         return this.props.authorId
     }

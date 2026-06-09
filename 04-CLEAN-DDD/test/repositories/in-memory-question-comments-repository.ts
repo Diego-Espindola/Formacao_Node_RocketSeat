@@ -1,3 +1,4 @@
+import { DomainEvents } from '@/core/events/domain-events.js'
 import type { PaginationParams } from '@/core/repositories/pagination-params.js'
 import { type QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository.js'
 import { QuestionComment } from '@/domain/forum/enterprise/entities/question-comment.js'
@@ -27,6 +28,8 @@ export class InMemoryQuestionCommentsRepository
 
   async create(questionComment: QuestionComment) {
     this.items.push(questionComment)
+
+    DomainEvents.dispatchEventsForAggregate(questionComment.id)
   }
 
   async delete(questionComment: QuestionComment) {
