@@ -1,0 +1,85 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-white">Exercícios</h2>
+      <p class="text-sm text-slate-400">Gerencie exercícios padrão e personalizados.</p>
+    </div>
+    <a routerLink="/exercises/new" class="btn-primary">Novo exercício</a>
+  </div>
+
+  <div class="card space-y-4">
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div>
+        <label class="label" for="search">Buscar</label>
+        <input
+          id="search"
+          type="search"
+          class="input-field"
+          placeholder="Nome ou grupo muscular..."
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </div>
+
+      <div>
+        <label class="label" for="muscleGroup">Filtrar por grupo</label>
+        <select
+          id="muscleGroup"
+          class="input-field"
+          [value]="selectedMuscleGroup()"
+          (change)="onMuscleGroupChange($event)"
+        >
+          <option value="">Todos</option>
+          @for (group of muscleGroupOptions; track group.value) {
+            <option [value]="group.value">{{ group.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  @if (exerciseService.loading()) {
+    <p class="text-center text-sm text-slate-400">Carregando exercícios...</p>
+  } @else if (exerciseService.error()) {
+    <p class="text-center text-sm text-red-400">{{ exerciseService.error() }}</p>
+  } @else if (filteredExercises().length === 0) {
+    <div class="card text-center">
+      <p class="text-slate-300">Nenhum exercício encontrado.</p>
+      <a routerLink="/exercises/new" class="btn-primary mt-4 inline-flex">Cadastrar exercício</a>
+    </div>
+  } @else {
+    <div class="grid gap-3">
+      @for (exercise of filteredExercises(); track exercise.id) {
+        <article class="card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="text-lg font-semibold text-white">{{ exercise.name }}</h3>
+              @if (!exercise.created_by) {
+                <span class="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+                  Sistema
+                </span>
+              }
+            </div>
+            <p class="text-sm text-slate-400">{{ formatMuscleGroup(exercise.muscle_group) }}</p>
+          </div>
+
+          <div class="flex gap-2">
+            <a [routerLink]="['/exercises', exercise.id, 'edit']" class="btn-secondary">
+              Editar
+            </a>
+            @if (exercise.created_by) {
+              <button
+                type="button"
+                class="btn-danger"
+                [disabled]="deletingId() === exercise.id"
+                (click)="removeExercise(exercise.id)"
+              >
+                {{ deletingId() === exercise.id ? 'Removendo...' : 'Excluir' }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

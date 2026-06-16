@@ -1,0 +1,40 @@
+<div class="min-h-screen bg-slate-950">
+  <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-primary-400">Gym Tracker</p>
+        <h1 class="text-lg font-bold text-white">Meus Treinos</h1>
+      </div>
+
+      @if (authService.user(); as user) {
+        <div class="flex items-center gap-3">
+          <span class="hidden text-sm text-slate-400 sm:inline">{{ user.name }}</span>
+          <button type="button" class="btn-secondary text-xs" (click)="authService.logout()">
+            Sair
+          </button>
+        </div>
+      }
+    </div>
+
+    <nav class="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-3">
+      <a
+        routerLink="/exercises"
+        routerLinkActive="bg-primary-600 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+      >
+        Exercícios
+      </a>
+      <a
+        routerLink="/workouts/register"
+        routerLinkActive="bg-primary-600 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+      >
+        Registrar Treino
+      </a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-4 py-6">
+    <router-outlet />
+  </main>
+</div>

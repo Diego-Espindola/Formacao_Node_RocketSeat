@@ -1,0 +1,49 @@
+<section class="mx-auto max-w-2xl space-y-6">
+  <div>
+    <a routerLink="/exercises" class="text-sm text-primary-400 hover:text-primary-300">
+      ← Voltar para lista
+    </a>
+    <h2 class="mt-2 text-2xl font-bold text-white">
+      {{ isEditing() ? 'Editar exercício' : 'Novo exercício' }}
+    </h2>
+    <p class="text-sm text-slate-400">
+      {{ isEditing() ? 'Atualize os dados do exercício.' : 'Cadastre um exercício personalizado.' }}
+    </p>
+  </div>
+
+  @if (loadingExercise()) {
+    <p class="text-sm text-slate-400">Carregando exercício...</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="card space-y-4">
+      <div>
+        <label class="label" for="name">Nome</label>
+        <input id="name" type="text" class="input-field" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <p class="mt-1 text-xs text-red-400">Nome é obrigatório (mín. 3 caracteres).</p>
+        }
+      </div>
+
+      <div>
+        <label class="label" for="muscle_group">Grupo muscular</label>
+        <select id="muscle_group" class="input-field" formControlName="muscle_group">
+          @for (group of muscleGroupOptions; track group.value) {
+            <option [value]="group.value">{{ group.label }}</option>
+          }
+        </select>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      <div class="flex gap-3">
+        <button type="submit" class="btn-primary" [disabled]="saving() || form.invalid">
+          {{ saving() ? 'Salvando...' : isEditing() ? 'Salvar alterações' : 'Cadastrar' }}
+        </button>
+        <a routerLink="/exercises" class="btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  }
+</section>
