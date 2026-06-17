@@ -21,7 +21,7 @@ describe('Create Answer', () => {
   it('should be able to create a answer with attachments', async () => {
     const result = await sut.execute({
       questionId: '1',
-      instructorId: '1',
+      authorId: '1',
       content: 'Conteúdo da resposta',
       attachmentsIds: ['1', '2'],
     });
