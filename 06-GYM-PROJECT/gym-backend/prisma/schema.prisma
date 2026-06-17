@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String    @id
+  name       String
+  email      String    @unique
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  exercise_executions ExerciseExecution[]
+
+  @@map("users")
+}
+
+model MuscleGroup {
+  id         String    @id
+  label      String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  exercises Exercise[]
+
+  @@map("muscle_groups")
+}
+
+model Exercise {
+  id              String    @id
+  name            String
+  muscle_group_id String
+  created_by      String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  muscle_group        MuscleGroup         @relation(fields: [muscle_group_id], references: [id])
+  exercise_executions ExerciseExecution[]
+
+  @@map("exercises")
+}
+
+model ExerciseExecution {
+  id          String    @id
+  user_id     String
+  exercise_id String
+  executed_at DateTime
+  notes       String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  user            User            @relation(fields: [user_id], references: [id])
+  exercise        Exercise        @relation(fields: [exercise_id], references: [id])
+  set_executions  SetExecution[]
+
+  @@map("exercise_executions")
+}
+
+model SetExecution {
+  id                    String    @id
+  exercise_execution_id String
+  sequence              Int
+  intensity_type        String
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  exercise_execution ExerciseExecution @relation(fields: [exercise_execution_id], references: [id])
+  set_informations   SetInformation[]
+
+  @@map("set_executions")
+}
+
+model SetInformation {
+  id               String    @id
+  set_execution_id String
+  reps             Int?
+  weight           Float?
+  duration_seconds Int?
+  distance         Float?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  set_execution SetExecution @relation(fields: [set_execution_id], references: [id])
+
+  @@map("set_informations")
+}

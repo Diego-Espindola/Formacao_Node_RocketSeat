@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "user-1",
+      "name": "Diego Espindola",
+      "email": "diegoespindola@gmail.com",
+      "created_at": "2026-01-01T00:00:00.000Z",
+      "updated_at": "2026-01-01T00:00:00.000Z",
+      "deleted_at": null
+    },
+    {
+      "id": "user-2",
+      "name": "Mairim Espindola",
+      "email": "mairimespindola@gmail.com",
+      "created_at": "2026-01-01T00:00:01.000Z",
+      "updated_at": "2026-01-01T00:00:01.000Z",
+      "deleted_at": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "ex-1",
+      "name": "Supino reto",
+      "muscle_group_id": "chest",
+      "created_by": null,
+      "created_at": "2026-01-01T00:00:00.000Z",
+      "updated_at": "2026-01-01T00:00:00.000Z",
+      "deleted_at": null
+    },
+    {
+      "id": "ex-2",
+      "name": "Agachamento livre",
+      "muscle_group_id": "legs",
+      "created_by": null,
+      "created_at": "2026-01-01T00:00:00.000Z",
+      "updated_at": "2026-01-01T00:00:00.000Z",
+      "deleted_at": null
+    },
+    {
+      "id": "ex-3",
+      "name": "Remada curvada",
+      "muscle_group_id": "back",
+      "created_by": null,
+      "created_at": "2026-01-01T00:00:00.000Z",
+      "updated_at": "2026-01-01T00:00:00.000Z",
+      "deleted_at": null
+    },
+    {
+      "id": "ex-4",
+      "name": "Desenvolvimento com halteres",
+      "muscle_group_id": "shoulders",
+      "created_by": null,
+      "created_at": "2026-01-01T00:00:00.000Z",
+      "updated_at": "2026-01-01T00:00:00.000Z",
+      "deleted_at": null
+    }
+  ],
+  "exercise_executions": [],
+  "set_executions": [],
+  "set_informations": []
+}

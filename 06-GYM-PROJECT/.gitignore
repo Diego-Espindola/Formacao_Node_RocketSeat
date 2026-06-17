@@ -3,3 +3,5 @@ dist/
 .angular/
 .env
 .env.*
+!gym-backend/.env.example
+
