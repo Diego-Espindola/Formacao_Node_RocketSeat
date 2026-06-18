@@ -40,3 +40,9 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Android build cache (projeto Capacitor versionado)
+/android/app/build
+/android/.gradle
+/android/build
+/capacitor.env.json

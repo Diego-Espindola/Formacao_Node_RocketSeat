@@ -6,7 +6,10 @@
     "start": "ng serve --port 3378 --host 0.0.0.0 --poll 2000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:run": "npx cap run android"
   },
   "private": true,
   "dependencies": {
@@ -20,9 +23,15 @@
     "@angular/router": "^18.2.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.10"
+    "zone.js": "~0.14.10",
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.2.0",
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
     "@angular/compiler-cli": "^18.2.0",

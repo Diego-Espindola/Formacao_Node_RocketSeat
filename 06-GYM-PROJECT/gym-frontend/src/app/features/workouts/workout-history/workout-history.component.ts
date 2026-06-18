@@ -7,6 +7,7 @@ import {
   countWorkoutSets,
   formatBlockType,
   formatExecutedAt,
+  formatIntensityType,
   formatSetSummary,
 } from '../../../shared/constants/workout.constants';
 import { Workout } from '../../../models';
@@ -22,11 +23,14 @@ export class WorkoutHistoryComponent implements OnInit {
   readonly workoutService = inject(WorkoutService);
 
   readonly searchTerm = signal('');
-  readonly expandedId = signal<string | null>(null);
+  readonly expandedWorkouts = signal<Set<string>>(new Set());
+  readonly expandedBlocks = signal<Set<string>>(new Set());
+  readonly expandedExercises = signal<Set<string>>(new Set());
 
   readonly formatExecutedAt = formatExecutedAt;
   readonly formatBlockType = formatBlockType;
   readonly formatSetSummary = formatSetSummary;
+  readonly formatIntensityType = formatIntensityType;
   readonly countExercises = countWorkoutExercises;
   readonly countSets = countWorkoutSets;
 
@@ -50,12 +54,52 @@ export class WorkoutHistoryComponent implements OnInit {
     this.searchTerm.set(target.value);
   }
 
-  toggleExpanded(id: string): void {
-    this.expandedId.update((current) => (current === id ? null : id));
+  blockKey(workoutId: string, blockId: string): string {
+    return `${workoutId}:${blockId}`;
+  }
+
+  exerciseKey(workoutId: string, blockId: string, exerciseId: string): string {
+    return `${workoutId}:${blockId}:${exerciseId}`;
+  }
+
+  isWorkoutExpanded(id: string): boolean {
+    return this.expandedWorkouts().has(id);
+  }
+
+  toggleWorkout(id: string): void {
+    this.toggleSet(this.expandedWorkouts, id);
+  }
+
+  isBlockExpanded(workoutId: string, blockId: string): boolean {
+    return this.expandedBlocks().has(this.blockKey(workoutId, blockId));
+  }
+
+  toggleBlock(workoutId: string, blockId: string): void {
+    this.toggleSet(this.expandedBlocks, this.blockKey(workoutId, blockId));
+  }
+
+  isExerciseExpanded(workoutId: string, blockId: string, exerciseId: string): boolean {
+    return this.expandedExercises().has(this.exerciseKey(workoutId, blockId, exerciseId));
+  }
+
+  toggleExercise(workoutId: string, blockId: string, exerciseId: string): void {
+    this.toggleSet(this.expandedExercises, this.exerciseKey(workoutId, blockId, exerciseId));
   }
 
   workoutTitle(workout: Workout): string {
     return workout.name ?? `Treino em ${formatExecutedAt(workout.executed_at)}`;
+  }
+
+  private toggleSet(target: { update: (fn: (current: Set<string>) => Set<string>) => void }, key: string): void {
+    target.update((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
   }
 
   private matchesSearch(workout: Workout, term: string): boolean {

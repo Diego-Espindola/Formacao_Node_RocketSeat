@@ -2,7 +2,8 @@
   <div>
     <h2 class="text-2xl font-bold text-white">Registrar Treino</h2>
     <p class="text-sm text-slate-400">
-      Selecione um exercício e registre suas séries com detalhes de carga e repetições.
+      Monte o treino em séries compostas: cada série pode ter vários exercícios e cada exercício
+      várias cargas (ex.: 10×20 kg + 4×15 kg).
     </p>
   </div>
 
@@ -15,89 +16,235 @@
           type="text"
           class="input-field"
           formControlName="name"
-          placeholder="Opcional — usa o nome do exercício se vazio"
+          placeholder="Ex.: Treino A — Peito e tríceps"
         />
-      </div>
-
-      <div>
-        <label class="label" for="exercise_id">Exercício</label>
-        <select id="exercise_id" class="input-field" formControlName="exercise_id">
-          <option value="">Selecione um exercício</option>
-          @for (exercise of exerciseService.exercises(); track exercise.id) {
-            <option [value]="exercise.id">
-              {{ exercise.name }} — {{ formatMuscleGroup(exercise.muscle_group) }}
-            </option>
-          }
-        </select>
-        @if (form.controls.exercise_id.touched && form.controls.exercise_id.invalid) {
-          <p class="mt-1 text-xs text-red-400">Selecione um exercício.</p>
-        }
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="label" for="executed_at">Data e hora</label>
-          <input id="executed_at" type="datetime-local" class="input-field" formControlName="executed_at" />
+          <input
+            id="executed_at"
+            type="datetime-local"
+            class="input-field"
+            formControlName="executed_at"
+          />
         </div>
         <div>
-          <label class="label" for="notes">Observações</label>
-          <input id="notes" type="text" class="input-field" formControlName="notes" placeholder="Opcional" />
+          <label class="label" for="notes">Observações gerais</label>
+          <input
+            id="notes"
+            type="text"
+            class="input-field"
+            formControlName="notes"
+            placeholder="Opcional"
+          />
         </div>
       </div>
     </div>
 
     <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-white">Séries</h3>
-        <button type="button" class="btn-secondary" (click)="addSet()">+ Adicionar série</button>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-semibold text-white">Séries do treino</h3>
+          <p class="text-sm text-slate-400">
+            Cada série agrupa os exercícios executados em sequência (isolado, bi-set, circuito…).
+          </p>
+        </div>
+        <button type="button" class="btn-secondary" (click)="addBlock()">+ Nova série</button>
       </div>
 
-      <div formArrayName="sets" class="space-y-4">
-        @for (setGroup of sets.controls; track $index; let setIndex = $index) {
-          <div class="card space-y-4" [formGroupName]="setIndex">
-            <div class="flex items-center justify-between gap-3">
-              <h4 class="font-medium text-white">Série {{ setIndex + 1 }}</h4>
-              @if (sets.length > 1) {
-                <button type="button" class="btn-danger" (click)="removeSet(setIndex)">Remover</button>
-              }
-            </div>
+      <div formArrayName="blocks" class="space-y-3">
+        @for (block of blocks.controls; track $index; let blockIndex = $index) {
+          <div class="accordion-card" [formGroupName]="blockIndex">
+            <button
+              type="button"
+              class="accordion-header"
+              (click)="toggleBlock(blockIndex)"
+            >
+              <div class="min-w-0 flex-1 text-left">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-semibold text-white">Série {{ blockIndex + 1 }}</span>
+                  <span class="rounded-full bg-primary-600/20 px-2 py-0.5 text-xs text-primary-300">
+                    {{ blockTypeLabel(blockIndex) }}
+                  </span>
+                  <span class="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                    {{ getExercises(blockIndex).length }}
+                    {{ getExercises(blockIndex).length === 1 ? 'exercício' : 'exercícios' }}
+                  </span>
+                </div>
+                <p class="mt-1 truncate text-sm text-slate-400">{{ blockSummary(blockIndex) }}</p>
+              </div>
+              <span class="accordion-chevron" [class.expanded]="isBlockExpanded(blockIndex)">›</span>
+            </button>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="label">Repetições</label>
-                <input type="number" min="1" class="input-field" formControlName="reps" />
-                @if (setGroup.controls.reps.touched && setGroup.controls.reps.invalid) {
-                  <p class="mt-1 text-xs text-red-400">Repetições obrigatórias.</p>
+            @if (isBlockExpanded(blockIndex)) {
+              <div class="accordion-body space-y-4">
+                <div>
+                  <label class="label" [for]="'block-notes-' + blockIndex">Notas da série</label>
+                  <input
+                    [id]="'block-notes-' + blockIndex"
+                    type="text"
+                    class="input-field"
+                    formControlName="notes"
+                    placeholder="Ex.: Bi-set sem descanso entre exercícios"
+                  />
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="text-sm font-medium text-slate-300">Exercícios nesta série</p>
+                  <button
+                    type="button"
+                    class="btn-secondary text-xs"
+                    (click)="openExerciseModal(blockIndex)"
+                  >
+                    + Adicionar exercício
+                  </button>
+                </div>
+
+                @if (!getExercises(blockIndex).length) {
+                  <div class="rounded-lg border border-dashed border-slate-700 bg-slate-950/40 p-4 text-center">
+                    <p class="text-sm text-slate-400">Nenhum exercício nesta série ainda.</p>
+                    <button
+                      type="button"
+                      class="btn-primary mt-3 text-xs"
+                      (click)="openExerciseModal(blockIndex)"
+                    >
+                      Adicionar primeiro exercício
+                    </button>
+                  </div>
+                } @else {
+                  <div class="space-y-2">
+                    @for (
+                      exercise of getExercises(blockIndex).controls;
+                      track $index;
+                      let exerciseIndex = $index
+                    ) {
+                      <div class="nested-card">
+                        <button
+                          type="button"
+                          class="nested-header"
+                          (click)="toggleExercise(blockIndex, exerciseIndex)"
+                        >
+                          <div class="min-w-0 flex-1 text-left">
+                            <p class="font-medium text-white">
+                              {{ exerciseName(exercise.controls.exercise_id.value) }}
+                            </p>
+                            <p class="text-xs text-slate-400">
+                              {{ getSets(blockIndex, exerciseIndex).length }}
+                              {{
+                                getSets(blockIndex, exerciseIndex).length === 1
+                                  ? 'carga'
+                                  : 'cargas'
+                              }}
+                              @if (exercise.controls.notes.value) {
+                                · {{ exercise.controls.notes.value }}
+                              }
+                            </p>
+                          </div>
+                          <span
+                            class="accordion-chevron text-base"
+                            [class.expanded]="isExerciseExpanded(blockIndex, exerciseIndex)"
+                          >
+                            ›
+                          </span>
+                        </button>
+
+                        @if (isExerciseExpanded(blockIndex, exerciseIndex)) {
+                          <div class="nested-body space-y-3">
+                            <div class="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                class="btn-secondary text-xs"
+                                (click)="openSetModal(blockIndex, exerciseIndex)"
+                              >
+                                + Adicionar carga
+                              </button>
+                              @if (getExercises(blockIndex).length > 1) {
+                                <button
+                                  type="button"
+                                  class="btn-danger text-xs"
+                                  (click)="removeExercise(blockIndex, exerciseIndex)"
+                                >
+                                  Remover exercício
+                                </button>
+                              }
+                            </div>
+
+                            @if (!getSets(blockIndex, exerciseIndex).length) {
+                              <p class="rounded-lg border border-dashed border-slate-700 px-3 py-4 text-center text-sm text-slate-400">
+                                Nenhuma carga registrada. Use o botão acima para adicionar.
+                              </p>
+                            } @else {
+                            <ul class="space-y-2">
+                              @for (
+                                set of getSets(blockIndex, exerciseIndex).controls;
+                                track $index;
+                                let setIndex = $index
+                              ) {
+                                <li class="set-row">
+                                  <div>
+                                    <span class="text-xs font-semibold uppercase text-slate-500">
+                                      Carga {{ setIndex + 1 }}
+                                    </span>
+                                    <p class="text-sm text-slate-200">
+                                      @if (set.controls.reps.value != null) {
+                                        {{ set.controls.reps.value }} reps
+                                      }
+                                      @if (set.controls.weight.value != null) {
+                                        @if (set.controls.reps.value != null) {
+                                          <span class="text-slate-500"> · </span>
+                                        }
+                                        {{ set.controls.weight.value }} kg
+                                      }
+                                      @if (set.controls.duration_seconds.value != null) {
+                                        <span class="text-slate-500"> · </span>
+                                        {{ set.controls.duration_seconds.value }}s
+                                      }
+                                      @if (set.controls.distance.value != null) {
+                                        <span class="text-slate-500"> · </span>
+                                        {{ set.controls.distance.value }} km
+                                      }
+                                      @if (
+                                        set.controls.intensity_type.value &&
+                                        set.controls.intensity_type.value !== 'REGULAR'
+                                      ) {
+                                        <span class="text-slate-500"> · </span>
+                                        {{ set.controls.intensity_type.value }}
+                                      }
+                                    </p>
+                                  </div>
+                                  @if (getSets(blockIndex, exerciseIndex).length > 1) {
+                                    <button
+                                      type="button"
+                                      class="text-xs text-red-400 hover:text-red-300"
+                                      (click)="removeSet(blockIndex, exerciseIndex, setIndex)"
+                                    >
+                                      Remover
+                                    </button>
+                                  }
+                                </li>
+                              }
+                            </ul>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (blocks.length > 1) {
+                  <button
+                    type="button"
+                    class="text-sm text-red-400 hover:text-red-300"
+                    (click)="removeBlock(blockIndex)"
+                  >
+                    Remover esta série
+                  </button>
                 }
               </div>
-
-              <div>
-                <label class="label">Peso (kg)</label>
-                <input type="number" min="0" step="0.5" class="input-field" formControlName="weight" />
-                @if (setGroup.controls.weight.touched && setGroup.controls.weight.invalid) {
-                  <p class="mt-1 text-xs text-red-400">Peso obrigatório.</p>
-                }
-              </div>
-
-              <div>
-                <label class="label">Duração (s)</label>
-                <input type="number" min="0" class="input-field" formControlName="duration_seconds" />
-              </div>
-
-              <div>
-                <label class="label">Distância (km)</label>
-                <input type="number" min="0" step="0.1" class="input-field" formControlName="distance" />
-              </div>
-
-              <div>
-                <label class="label">Tipo de intensidade</label>
-                <select class="input-field" formControlName="intensity_type">
-                  @for (type of intensityTypeOptions; track type.value) {
-                    <option [value]="type.value">{{ type.label }}</option>
-                  }
-                </select>
-              </div>
-            </div>
+            }
           </div>
         }
       </div>
@@ -117,10 +264,106 @@
     }
 
     <div class="flex gap-3">
-      <button type="submit" class="btn-primary" [disabled]="saving() || form.invalid">
+      <button type="submit" class="btn-primary" [disabled]="saving()">
         {{ saving() ? 'Salvando treino...' : 'Salvar treino' }}
       </button>
       <button type="button" class="btn-secondary" (click)="resetForm()">Limpar</button>
     </div>
   </form>
+
+  <app-modal
+    [open]="modalTarget()?.type === 'exercise'"
+    title="Adicionar exercício"
+    [subtitle]="modalExerciseSubtitle()"
+    (close)="closeModal()"
+  >
+    <form [formGroup]="modalExerciseForm" class="space-y-4" (ngSubmit)="confirmModal()">
+      <div>
+        <label class="label" for="modal-exercise">Exercício</label>
+        <select id="modal-exercise" class="input-field" formControlName="exercise_id">
+          <option value="">Selecione</option>
+          @for (exercise of exerciseService.exercises(); track exercise.id) {
+            <option [value]="exercise.id">
+              {{ exercise.name }} — {{ formatMuscleGroup(exercise.muscle_group) }}
+            </option>
+          }
+        </select>
+        @if (
+          modalExerciseForm.controls.exercise_id.touched &&
+          modalExerciseForm.controls.exercise_id.invalid
+        ) {
+          <p class="mt-1 text-xs text-red-400">Selecione um exercício.</p>
+        }
+      </div>
+
+      <div>
+        <label class="label" for="modal-exercise-notes">Notas do exercício</label>
+        <input
+          id="modal-exercise-notes"
+          type="text"
+          class="input-field"
+          formControlName="notes"
+          placeholder="Opcional"
+        />
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Adicionar</button>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal
+    [open]="modalTarget()?.type === 'set'"
+    title="Adicionar carga"
+    [subtitle]="modalSetSubtitle()"
+    (close)="closeModal()"
+  >
+    <form [formGroup]="modalSetForm" class="space-y-4" (ngSubmit)="confirmModal()">
+      <p class="text-sm text-slate-400">
+        Registre reps, peso ou métricas. Várias cargas no mesmo exercício representam drop-sets,
+        rest-pause etc.
+      </p>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="label">Repetições</label>
+          <input type="number" min="1" class="input-field" formControlName="reps" />
+          @if (modalSetForm.controls.reps.touched && modalSetForm.controls.reps.invalid) {
+            <p class="mt-1 text-xs text-red-400">Informe as repetições.</p>
+          }
+        </div>
+
+        <div>
+          <label class="label">Peso (kg)</label>
+          <input type="number" min="0" step="0.5" class="input-field" formControlName="weight" />
+        </div>
+
+        <div>
+          <label class="label">Duração (s)</label>
+          <input type="number" min="0" class="input-field" formControlName="duration_seconds" />
+        </div>
+
+        <div>
+          <label class="label">Distância (km)</label>
+          <input type="number" min="0" step="0.1" class="input-field" formControlName="distance" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="label">Tipo de intensidade</label>
+          <select class="input-field" formControlName="intensity_type">
+            @for (type of intensityTypeOptions; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Adicionar carga</button>
+      </div>
+    </form>
+  </app-modal>
 </section>

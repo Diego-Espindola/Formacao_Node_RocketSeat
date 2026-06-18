@@ -18,6 +18,30 @@ export function formatBlockType(type: string): string {
   return BLOCK_TYPE_LABELS[type] ?? type;
 }
 
+export function formatIntensityType(type: string | null): string {
+  if (!type || type === 'REGULAR') {
+    return 'Regular';
+  }
+
+  return INTENSITY_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+}
+
+export function inferBlockType(exerciseCount: number): string {
+  if (exerciseCount <= 1) {
+    return 'SINGLE';
+  }
+
+  if (exerciseCount === 2) {
+    return 'BI_SET';
+  }
+
+  if (exerciseCount === 3) {
+    return 'TRI_SET';
+  }
+
+  return 'CIRCUIT';
+}
+
 export function formatExecutedAt(isoDate: string | null): string {
   if (!isoDate) {
     return 'Data não informada';
