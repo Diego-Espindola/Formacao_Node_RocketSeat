@@ -57,4 +57,55 @@ export function serializeExercises(records) {
   return records.map(serializeExercise);
 }
 
+function serializeWorkoutExercise(record) {
+  const { exercise, exercise_sets, ...rest } = record;
+
+  return serialize({
+    ...rest,
+    exercise: exercise ? serializeExercise(exercise) : undefined,
+    sets: serializeMany(exercise_sets ?? []),
+  });
+}
+
+function serializeWorkoutBlock(record) {
+  const { workout_exercises, ...rest } = record;
+
+  return serialize({
+    ...rest,
+    exercises: (workout_exercises ?? []).map(serializeWorkoutExercise),
+  });
+}
+
+export function serializeWorkout(record) {
+  if (!record) {
+    return record;
+  }
+
+  const { workout_blocks, ...rest } = record;
+
+  return serialize({
+    ...rest,
+    blocks: (workout_blocks ?? []).map(serializeWorkoutBlock),
+  });
+}
+
+export function serializeWorkouts(records) {
+  return records.map(serializeWorkout);
+}
+
+export const workoutInclude = {
+  workout_blocks: {
+    orderBy: { sequence: 'asc' },
+    include: {
+      workout_exercises: {
+        orderBy: { sequence: 'asc' },
+        include: {
+          exercise: { include: { muscle_group: true } },
+          exercise_sets: { orderBy: { sequence: 'asc' } },
+        },
+      },
+    },
+  },
+};
+
 export { prisma };

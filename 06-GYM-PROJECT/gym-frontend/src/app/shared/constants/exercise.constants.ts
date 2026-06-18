@@ -14,13 +14,6 @@ export const MUSCLE_GROUP_OPTIONS: { value: MuscleGroup; label: string }[] = [
   { value: 'other', label: 'Outro' },
 ];
 
-export const INTENSITY_TYPE_OPTIONS = [
-  { value: 'weight', label: 'Peso' },
-  { value: 'bodyweight', label: 'Peso corporal' },
-  { value: 'time', label: 'Tempo' },
-  { value: 'distance', label: 'Distância' },
-] as const;
-
 export function formatMuscleGroup(group: MuscleGroup): string {
   return MUSCLE_GROUP_OPTIONS.find((option) => option.value === group)?.label ?? group;
 }

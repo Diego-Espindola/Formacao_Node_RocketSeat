@@ -39,6 +39,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'workouts/history',
+        loadComponent: () =>
+          import('./features/workouts/workout-history/workout-history.component').then(
+            (m) => m.WorkoutHistoryComponent,
+          ),
+      },
+      {
         path: 'workouts/register',
         loadComponent: () =>
           import('./features/workouts/workout-register/workout-register.component').then(

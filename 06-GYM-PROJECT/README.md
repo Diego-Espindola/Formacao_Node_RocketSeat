@@ -31,7 +31,7 @@ cd 06-GYM-PROJECT
 make start
 ```
 
-Abre em **http://localhost:47831**. Login: **qualquer e-mail/senha**.
+Abre em **http://localhost:47831**. Login: use um **e-mail cadastrado** em `data/seed.json` (a senha é obrigatória no formulário, mas ainda não é validada no banco).
 
 ### Portas e rede
 
@@ -117,7 +117,7 @@ O backend recebe `DATABASE_URL` e `SEED_PATH` via `docker-compose.yml` — não 
 
 Os dados ficam em `data/seed.json` e são versionados no Git.
 
-**`muscle_groups`** (Peito, Costas, etc.) são dados de referência fixos — ficam na **migration**, não no seed. O seed traz users, exercises, execuções e sets.
+**`muscle_groups`** (Peito, Costas, etc.) são dados de referência fixos — ficam na **migration**, não no seed. O seed traz users, exercises e workouts (blocos, exercícios e séries).
 
 ```
 Git (seed.json) ──git pull──► disco ──import (se vazio)──► Postgres
@@ -197,11 +197,9 @@ O Makefile usa `sudo docker compose` se necessário.
 | GET/POST | `/exercises` |
 | GET/PUT/DELETE | `/exercises/:id` |
 | GET | `/muscle-groups` |
-| GET/POST | `/exercise-executions` |
-| GET/PUT/DELETE | `/exercise-executions/:id` |
-| GET | `/exercise-executions/:id/set-executions` |
-| POST | `/set-executions` |
-| GET | `/set-executions/:id/set-informations` |
-| POST | `/set-informations` |
+| GET/POST | `/workouts` |
+| GET/PUT/DELETE | `/workouts/:id` |
+
+Filtro opcional em `GET /workouts`: `?is_template=true` ou `?is_template=false`.
 
 O frontend chama `/api/...`; o nginx repassa para o backend removendo o prefixo `/api`.

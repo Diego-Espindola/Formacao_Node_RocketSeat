@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import cors from 'cors';
 import express from 'express';
 
-import { prisma, serialize, serializeExercise, serializeExercises, serializeMany } from './lib/prisma.js';
+import { prisma, serialize, serializeExercise, serializeExercises, serializeMany, serializeWorkout, serializeWorkouts, workoutInclude } from './lib/prisma.js';
 
 const PORT = 3377;
 
@@ -14,7 +14,7 @@ const notDeleted = { deleted_at: null };
 
 app.get('/health', async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
-  res.json({ ok: true, message: 'gym-backend xulo rodando' });
+  res.json({ ok: true, message: 'gym-backend top rodando' });
 });
 
 async function auth(req, res, next) {
@@ -54,18 +54,12 @@ app.post('/sessions', async (req, res) => {
     return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
   }
 
-  let user = await prisma.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: { email, ...notDeleted },
   });
 
   if (!user) {
-    user = await prisma.user.create({
-      data: {
-        id: randomUUID(),
-        name: email.split('@')[0],
-        email,
-      },
-    });
+    return res.status(401).json({ message: 'E-mail não cadastrado.' });
   }
 
   return res.json({
@@ -180,213 +174,223 @@ app.delete('/exercises/:id', async (req, res) => {
   res.status(204).send();
 });
 
-app.get('/exercise-executions', async (_req, res) => {
-  const executions = await prisma.exerciseExecution.findMany({
-    where: notDeleted,
-    orderBy: { executed_at: 'desc' },
-  });
-  res.json(serializeMany(executions));
-});
+const BLOCK_TYPES = new Set(['SINGLE', 'BI_SET', 'TRI_SET', 'CIRCUIT']);
 
-app.get('/exercise-executions/:id', async (req, res) => {
-  const execution = await prisma.exerciseExecution.findFirst({
-    where: { id: req.params.id, ...notDeleted },
-  });
-
-  if (!execution) {
-    return res.status(404).json({ message: 'Execução não encontrada.' });
+async function validateExerciseIds(exerciseIds) {
+  const uniqueIds = [...new Set(exerciseIds)];
+  if (!uniqueIds.length) {
+    return true;
   }
 
-  res.json(serialize(execution));
-});
+  const count = await prisma.exercise.count({
+    where: { id: { in: uniqueIds }, ...notDeleted },
+  });
 
-app.post('/exercise-executions', async (req, res) => {
-  const { exercise_id, executed_at, notes } = req.body ?? {};
+  return count === uniqueIds.length;
+}
 
-  if (!exercise_id) {
-    return res.status(400).json({ message: 'exercise_id é obrigatório.' });
+function collectExerciseIds(blocks) {
+  return (blocks ?? []).flatMap((block) =>
+    (block.exercises ?? []).map((exercise) => exercise.exercise_id),
+  );
+}
+
+function validateBlocks(blocks) {
+  if (!blocks?.length) {
+    return null;
   }
 
-  const execution = await prisma.exerciseExecution.create({
-    data: {
-      id: randomUUID(),
-      user_id: req.user.id,
-      exercise_id,
-      executed_at: executed_at ? new Date(executed_at) : new Date(),
-      notes: notes ?? null,
-    },
-  });
+  for (const block of blocks) {
+    if (block.sequence == null) {
+      return 'Cada bloco precisa de sequence.';
+    }
 
-  res.status(201).json(serialize(execution));
-});
+    if (block.block_type && !BLOCK_TYPES.has(block.block_type)) {
+      return `block_type inválido: ${block.block_type}.`;
+    }
 
-app.put('/exercise-executions/:id', async (req, res) => {
-  const existing = await prisma.exerciseExecution.findFirst({
-    where: { id: req.params.id, ...notDeleted },
-  });
+    for (const exercise of block.exercises ?? []) {
+      if (!exercise.exercise_id || exercise.sequence == null) {
+        return 'Cada exercício precisa de exercise_id e sequence.';
+      }
 
-  if (!existing) {
-    return res.status(404).json({ message: 'Execução não encontrada.' });
+      for (const set of exercise.sets ?? []) {
+        if (set.sequence == null) {
+          return 'Cada série precisa de sequence.';
+        }
+      }
+    }
   }
 
-  const execution = await prisma.exerciseExecution.update({
-    where: { id: req.params.id },
-    data: {
-      ...(req.body.executed_at ? { executed_at: new Date(req.body.executed_at) } : {}),
-      ...('notes' in req.body ? { notes: req.body.notes } : {}),
-    },
-  });
+  return null;
+}
 
-  res.json(serialize(execution));
-});
-
-app.delete('/exercise-executions/:id', async (req, res) => {
-  const existing = await prisma.exerciseExecution.findFirst({
-    where: { id: req.params.id, ...notDeleted },
-  });
-
-  if (!existing) {
-    return res.status(404).json({ message: 'Execução não encontrada.' });
-  }
-
-  await prisma.exerciseExecution.update({
-    where: { id: req.params.id },
-    data: { deleted_at: new Date() },
-  });
-
-  res.status(204).send();
-});
-
-app.get('/exercise-executions/:id/set-executions', async (req, res) => {
-  const sets = await prisma.setExecution.findMany({
-    where: { exercise_execution_id: req.params.id, ...notDeleted },
-    orderBy: { sequence: 'asc' },
-  });
-  res.json(serializeMany(sets));
-});
-
-app.post('/set-executions', async (req, res) => {
-  const { exercise_execution_id, sequence, intensity_type } = req.body ?? {};
-
-  if (!exercise_execution_id || sequence == null || !intensity_type) {
-    return res.status(400).json({
-      message: 'exercise_execution_id, sequence e intensity_type são obrigatórios.',
+async function createWorkoutBlocks(tx, workoutId, blocks) {
+  for (const block of blocks ?? []) {
+    const workoutBlock = await tx.workoutBlock.create({
+      data: {
+        id: randomUUID(),
+        workout_id: workoutId,
+        sequence: block.sequence,
+        block_type: block.block_type ?? 'SINGLE',
+        notes: block.notes ?? null,
+      },
     });
+
+    for (const exercise of block.exercises ?? []) {
+      const workoutExercise = await tx.workoutExercise.create({
+        data: {
+          id: randomUUID(),
+          workout_block_id: workoutBlock.id,
+          exercise_id: exercise.exercise_id,
+          sequence: exercise.sequence,
+          notes: exercise.notes ?? null,
+        },
+      });
+
+      for (const set of exercise.sets ?? []) {
+        await tx.exerciseSet.create({
+          data: {
+            id: randomUUID(),
+            workout_exercise_id: workoutExercise.id,
+            sequence: set.sequence,
+            reps: set.reps ?? null,
+            weight: set.weight ?? null,
+            duration_seconds: set.duration_seconds ?? null,
+            distance: set.distance ?? null,
+            intensity_type: set.intensity_type ?? 'REGULAR',
+          },
+        });
+      }
+    }
+  }
+}
+
+async function findWorkoutForUser(id, userId) {
+  return prisma.workout.findFirst({
+    where: { id, user_id: userId },
+    include: workoutInclude,
+  });
+}
+
+app.get('/workouts', async (req, res) => {
+  const { is_template } = req.query;
+  const where = { user_id: req.user.id };
+
+  if (is_template === 'true') {
+    where.is_template = true;
+  } else if (is_template === 'false') {
+    where.is_template = false;
   }
 
-  const setExecution = await prisma.setExecution.create({
-    data: {
-      id: randomUUID(),
-      exercise_execution_id,
-      sequence,
-      intensity_type,
-    },
+  const workouts = await prisma.workout.findMany({
+    where,
+    include: workoutInclude,
+    orderBy: [{ executed_at: 'desc' }, { created_at: 'desc' }],
   });
 
-  res.status(201).json(serialize(setExecution));
+  res.json(serializeWorkouts(workouts));
 });
 
-app.put('/set-executions/:id', async (req, res) => {
-  const existing = await prisma.setExecution.findFirst({
-    where: { id: req.params.id, ...notDeleted },
+app.get('/workouts/:id', async (req, res) => {
+  const workout = await findWorkoutForUser(req.params.id, req.user.id);
+
+  if (!workout) {
+    return res.status(404).json({ message: 'Treino não encontrado.' });
+  }
+
+  res.json(serializeWorkout(workout));
+});
+
+app.post('/workouts', async (req, res) => {
+  const { name, notes, is_template, executed_at, blocks } = req.body ?? {};
+  const validationError = validateBlocks(blocks);
+
+  if (validationError) {
+    return res.status(400).json({ message: validationError });
+  }
+
+  const exerciseIds = collectExerciseIds(blocks);
+  if (!(await validateExerciseIds(exerciseIds))) {
+    return res.status(400).json({ message: 'Um ou mais exercícios são inválidos.' });
+  }
+
+  const workoutId = await prisma.$transaction(async (tx) => {
+    const workout = await tx.workout.create({
+      data: {
+        id: randomUUID(),
+        user_id: req.user.id,
+        name: name ?? null,
+        notes: notes ?? null,
+        is_template: is_template ?? false,
+        executed_at: executed_at ? new Date(executed_at) : null,
+      },
+    });
+
+    await createWorkoutBlocks(tx, workout.id, blocks);
+    return workout.id;
+  });
+
+  const workout = await findWorkoutForUser(workoutId, req.user.id);
+  res.status(201).json(serializeWorkout(workout));
+});
+
+app.put('/workouts/:id', async (req, res) => {
+  const existing = await prisma.workout.findFirst({
+    where: { id: req.params.id, user_id: req.user.id },
   });
 
   if (!existing) {
-    return res.status(404).json({ message: 'Série não encontrada.' });
+    return res.status(404).json({ message: 'Treino não encontrado.' });
   }
 
-  const setExecution = await prisma.setExecution.update({
-    where: { id: req.params.id },
-    data: {
-      ...(req.body.sequence != null ? { sequence: req.body.sequence } : {}),
-      ...(req.body.intensity_type ? { intensity_type: req.body.intensity_type } : {}),
-    },
+  const { name, notes, is_template, executed_at, blocks } = req.body ?? {};
+
+  if (blocks) {
+    const validationError = validateBlocks(blocks);
+    if (validationError) {
+      return res.status(400).json({ message: validationError });
+    }
+
+    const exerciseIds = collectExerciseIds(blocks);
+    if (!(await validateExerciseIds(exerciseIds))) {
+      return res.status(400).json({ message: 'Um ou mais exercícios são inválidos.' });
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.workout.update({
+      where: { id: req.params.id },
+      data: {
+        ...('name' in req.body ? { name: name ?? null } : {}),
+        ...('notes' in req.body ? { notes: notes ?? null } : {}),
+        ...('is_template' in req.body ? { is_template: is_template ?? false } : {}),
+        ...('executed_at' in req.body
+          ? { executed_at: executed_at ? new Date(executed_at) : null }
+          : {}),
+      },
+    });
+
+    if (blocks) {
+      await tx.workoutBlock.deleteMany({ where: { workout_id: req.params.id } });
+      await createWorkoutBlocks(tx, req.params.id, blocks);
+    }
   });
 
-  res.json(serialize(setExecution));
+  const workout = await findWorkoutForUser(req.params.id, req.user.id);
+  res.json(serializeWorkout(workout));
 });
 
-app.delete('/set-executions/:id', async (req, res) => {
-  const existing = await prisma.setExecution.findFirst({
-    where: { id: req.params.id, ...notDeleted },
+app.delete('/workouts/:id', async (req, res) => {
+  const existing = await prisma.workout.findFirst({
+    where: { id: req.params.id, user_id: req.user.id },
   });
 
   if (!existing) {
-    return res.status(404).json({ message: 'Série não encontrada.' });
+    return res.status(404).json({ message: 'Treino não encontrado.' });
   }
 
-  await prisma.setExecution.update({
-    where: { id: req.params.id },
-    data: { deleted_at: new Date() },
-  });
-
-  res.status(204).send();
-});
-
-app.get('/set-executions/:id/set-informations', async (req, res) => {
-  const infos = await prisma.setInformation.findMany({
-    where: { set_execution_id: req.params.id, ...notDeleted },
-  });
-  res.json(serializeMany(infos));
-});
-
-app.post('/set-informations', async (req, res) => {
-  const { set_execution_id, reps, weight, duration_seconds, distance } = req.body ?? {};
-
-  if (!set_execution_id) {
-    return res.status(400).json({ message: 'set_execution_id é obrigatório.' });
-  }
-
-  const info = await prisma.setInformation.create({
-    data: {
-      id: randomUUID(),
-      set_execution_id,
-      reps: reps ?? null,
-      weight: weight ?? null,
-      duration_seconds: duration_seconds ?? null,
-      distance: distance ?? null,
-    },
-  });
-
-  res.status(201).json(serialize(info));
-});
-
-app.put('/set-informations/:id', async (req, res) => {
-  const existing = await prisma.setInformation.findFirst({
-    where: { id: req.params.id, ...notDeleted },
-  });
-
-  if (!existing) {
-    return res.status(404).json({ message: 'Informação não encontrada.' });
-  }
-
-  const info = await prisma.setInformation.update({
-    where: { id: req.params.id },
-    data: {
-      ...('reps' in req.body ? { reps: req.body.reps } : {}),
-      ...('weight' in req.body ? { weight: req.body.weight } : {}),
-      ...('duration_seconds' in req.body ? { duration_seconds: req.body.duration_seconds } : {}),
-      ...('distance' in req.body ? { distance: req.body.distance } : {}),
-    },
-  });
-
-  res.json(serialize(info));
-});
-
-app.delete('/set-informations/:id', async (req, res) => {
-  const existing = await prisma.setInformation.findFirst({
-    where: { id: req.params.id, ...notDeleted },
-  });
-
-  if (!existing) {
-    return res.status(404).json({ message: 'Informação não encontrada.' });
-  }
-
-  await prisma.setInformation.update({
-    where: { id: req.params.id },
-    data: { deleted_at: new Date() },
-  });
-
+  await prisma.workout.delete({ where: { id: req.params.id } });
   res.status(204).send();
 });
 
@@ -396,6 +400,6 @@ app.use((error, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🏋️ gym-backend xulo em http://localhost:${PORT}`);
-  console.log('Login: qualquer e-mail/senha funciona');
+  console.log(`🏋️ gym-backend top em http://localhost:${PORT}`);
+  console.log('Login: use um e-mail cadastrado no seed.json');
 });

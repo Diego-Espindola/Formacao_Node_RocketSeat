@@ -7,62 +7,52 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { forkJoin, switchMap } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
 
-import { ExerciseExecutionService } from '../../../services/exercise-execution.service';
 import { ExerciseService } from '../../../services/exercise.service';
-import { SetExecutionService } from '../../../services/set-execution.service';
-import { SetInformationService } from '../../../services/set-information.service';
+import { WorkoutService } from '../../../services/workout.service';
+import { formatMuscleGroup } from '../../../shared/constants/exercise.constants';
 import {
   INTENSITY_TYPE_OPTIONS,
-  formatMuscleGroup,
-} from '../../../shared/constants/exercise.constants';
-import { IntensityType } from '../../../models';
+} from '../../../shared/constants/workout.constants';
+import { CreateWorkoutRequest, IntensityType } from '../../../models';
 
-interface SetInformationValue {
+interface SetValue {
   reps: number | null;
   weight: number | null;
   duration_seconds: number | null;
   distance: number | null;
-}
-
-interface SetValue {
   intensity_type: IntensityType;
-  informations: SetInformationValue[];
 }
 
 interface WorkoutFormValue {
+  name: string;
   exercise_id: string;
   executed_at: string;
   notes: string;
   sets: SetValue[];
 }
 
-type SetInformationForm = FormGroup<{
+type SetForm = FormGroup<{
   reps: FormControl<number | null>;
   weight: FormControl<number | null>;
   duration_seconds: FormControl<number | null>;
   distance: FormControl<number | null>;
-}>;
-
-type SetForm = FormGroup<{
   intensity_type: FormControl<IntensityType>;
-  informations: FormArray<SetInformationForm>;
 }>;
 
 @Component({
   selector: 'app-workout-register',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './workout-register.component.html',
   styleUrl: './workout-register.component.scss',
 })
 export class WorkoutRegisterComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
   readonly exerciseService = inject(ExerciseService);
-  private readonly exerciseExecutionService = inject(ExerciseExecutionService);
-  private readonly setExecutionService = inject(SetExecutionService);
-  private readonly setInformationService = inject(SetInformationService);
+  private readonly workoutService = inject(WorkoutService);
 
   readonly intensityTypeOptions = INTENSITY_TYPE_OPTIONS;
   readonly formatMuscleGroup = formatMuscleGroup;
@@ -71,6 +61,7 @@ export class WorkoutRegisterComponent implements OnInit {
   readonly successMessage = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
+    name: [''],
     exercise_id: ['', Validators.required],
     executed_at: [this.toLocalDateTimeInputValue(new Date()), Validators.required],
     notes: [''],
@@ -85,10 +76,6 @@ export class WorkoutRegisterComponent implements OnInit {
     return this.form.controls.sets;
   }
 
-  getInformations(setIndex: number): FormArray<SetInformationForm> {
-    return this.sets.at(setIndex).controls.informations;
-  }
-
   addSet(): void {
     this.sets.push(this.createSetGroup());
   }
@@ -97,16 +84,9 @@ export class WorkoutRegisterComponent implements OnInit {
     this.sets.removeAt(index);
   }
 
-  addSetInformation(setIndex: number): void {
-    this.getInformations(setIndex).push(this.createSetInformationGroup());
-  }
-
-  removeSetInformation(setIndex: number, infoIndex: number): void {
-    this.getInformations(setIndex).removeAt(infoIndex);
-  }
-
   resetForm(): void {
     this.form.reset({
+      name: '',
       exercise_id: '',
       executed_at: this.toLocalDateTimeInputValue(new Date()),
       notes: '',
@@ -127,70 +107,61 @@ export class WorkoutRegisterComponent implements OnInit {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    const { exercise_id, executed_at, notes, sets } =
+    const { name, exercise_id, executed_at, notes, sets } =
       this.form.getRawValue() as WorkoutFormValue;
 
-    this.exerciseExecutionService
-      .create({
-        exercise_id,
-        executed_at: new Date(executed_at).toISOString(),
-        notes: notes || null,
-      })
-      .pipe(
-        switchMap((execution) => {
-          const setRequests = sets.map((set, index) =>
-            this.setExecutionService
-              .create({
-                exercise_execution_id: execution.id,
+    const selectedExercise = this.exerciseService
+      .exercises()
+      .find((exercise) => exercise.id === exercise_id);
+
+    const payload: CreateWorkoutRequest = {
+      name: name.trim() || selectedExercise?.name || null,
+      notes: notes.trim() || null,
+      is_template: false,
+      executed_at: new Date(executed_at).toISOString(),
+      blocks: [
+        {
+          sequence: 1,
+          block_type: 'SINGLE',
+          exercises: [
+            {
+              exercise_id,
+              sequence: 1,
+              sets: sets.map((set, index) => ({
                 sequence: index + 1,
+                reps: set.reps,
+                weight: set.weight,
+                duration_seconds: set.duration_seconds,
+                distance: set.distance,
                 intensity_type: set.intensity_type,
-              })
-              .pipe(
-                switchMap((setExecution) => {
-                  const infoRequests = set.informations.map((info) =>
-                    this.setInformationService.create({
-                      set_execution_id: setExecution.id,
-                      reps: info.reps,
-                      weight: info.weight,
-                      duration_seconds: info.duration_seconds,
-                      distance: info.distance,
-                    }),
-                  );
-
-                  return forkJoin(infoRequests);
-                }),
-              ),
-          );
-
-          return forkJoin(setRequests);
-        }),
-      )
-      .subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.successMessage.set('Treino registrado com sucesso!');
-          this.resetForm();
+              })),
+            },
+          ],
         },
-        error: () => {
-          this.saving.set(false);
-          this.errorMessage.set('Não foi possível registrar o treino. Verifique a API.');
-        },
-      });
-  }
+      ],
+    };
 
-  private createSetGroup(): SetForm {
-    return this.fb.group({
-      intensity_type: this.fb.nonNullable.control<IntensityType>('weight', Validators.required),
-      informations: this.fb.array<SetInformationForm>([this.createSetInformationGroup()]),
+    this.workoutService.create(payload).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.successMessage.set('Treino registrado com sucesso!');
+        this.resetForm();
+        void this.router.navigate(['/workouts/history']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.errorMessage.set('Não foi possível registrar o treino. Verifique a API.');
+      },
     });
   }
 
-  private createSetInformationGroup(): SetInformationForm {
+  private createSetGroup(): SetForm {
     return this.fb.group({
       reps: this.fb.control<number | null>(null, [Validators.required, Validators.min(1)]),
       weight: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
       duration_seconds: this.fb.control<number | null>(null),
       distance: this.fb.control<number | null>(null),
+      intensity_type: this.fb.nonNullable.control<IntensityType>('REGULAR', Validators.required),
     });
   }
 

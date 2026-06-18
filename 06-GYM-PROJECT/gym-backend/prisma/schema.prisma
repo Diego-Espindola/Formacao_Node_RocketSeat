@@ -15,7 +15,7 @@ model User {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  exercise_executions ExerciseExecution[]
+  workouts Workout[]
 
   @@map("users")
 }
@@ -41,56 +41,70 @@ model Exercise {
   updated_at      DateTime  @updatedAt
   deleted_at      DateTime?
 
-  muscle_group        MuscleGroup         @relation(fields: [muscle_group_id], references: [id])
-  exercise_executions ExerciseExecution[]
+  muscle_group      MuscleGroup       @relation(fields: [muscle_group_id], references: [id])
+  workout_exercises WorkoutExercise[]
 
   @@map("exercises")
 }
 
-model ExerciseExecution {
+model Workout {
   id          String    @id
   user_id     String
-  exercise_id String
-  executed_at DateTime
+  name        String?
   notes       String?
+  is_template Boolean   @default(false)
+  executed_at DateTime?
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-  deleted_at  DateTime?
 
-  user            User            @relation(fields: [user_id], references: [id])
-  exercise        Exercise        @relation(fields: [exercise_id], references: [id])
-  set_executions  SetExecution[]
+  user           User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workout_blocks WorkoutBlock[]
 
-  @@map("exercise_executions")
+  @@map("workouts")
 }
 
-model SetExecution {
-  id                    String    @id
-  exercise_execution_id String
-  sequence              Int
-  intensity_type        String
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-  deleted_at            DateTime?
+model WorkoutBlock {
+  id         String  @id
+  workout_id String
+  sequence   Int
+  block_type String  @default("SINGLE")
+  notes      String?
 
-  exercise_execution ExerciseExecution @relation(fields: [exercise_execution_id], references: [id])
-  set_informations   SetInformation[]
+  workout           Workout           @relation(fields: [workout_id], references: [id], onDelete: Cascade)
+  workout_exercises WorkoutExercise[]
 
-  @@map("set_executions")
+  @@index([workout_id, sequence], name: "idx_workout_block_order")
+  @@map("workout_blocks")
 }
 
-model SetInformation {
-  id               String    @id
-  set_execution_id String
-  reps             Int?
-  weight           Float?
-  duration_seconds Int?
-  distance         Float?
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-  deleted_at       DateTime?
+model WorkoutExercise {
+  id               String  @id
+  workout_block_id String
+  exercise_id      String
+  sequence         Int
+  notes            String?
 
-  set_execution SetExecution @relation(fields: [set_execution_id], references: [id])
+  workout_block WorkoutBlock  @relation(fields: [workout_block_id], references: [id], onDelete: Cascade)
+  exercise      Exercise      @relation(fields: [exercise_id], references: [id])
+  exercise_sets ExerciseSet[]
 
-  @@map("set_informations")
+  @@index([workout_block_id, sequence], name: "idx_block_exercise_order")
+  @@map("workout_exercises")
+}
+
+model ExerciseSet {
+  id                  String   @id
+  workout_exercise_id String
+  sequence            Int
+  reps                Int?
+  weight              Float?
+  duration_seconds    Int?
+  distance            Float?
+  intensity_type      String?  @default("REGULAR")
+  created_at          DateTime @default(now())
+
+  workout_exercise WorkoutExercise @relation(fields: [workout_exercise_id], references: [id], onDelete: Cascade)
+
+  @@index([workout_exercise_id, sequence], name: "idx_exercise_set_order")
+  @@map("exercise_sets")
 }

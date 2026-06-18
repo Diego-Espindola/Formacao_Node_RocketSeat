@@ -9,6 +9,17 @@
   <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
     <div class="card space-y-4">
       <div>
+        <label class="label" for="name">Nome do treino</label>
+        <input
+          id="name"
+          type="text"
+          class="input-field"
+          formControlName="name"
+          placeholder="Opcional — usa o nome do exercício se vazio"
+        />
+      </div>
+
+      <div>
         <label class="label" for="exercise_id">Exercício</label>
         <select id="exercise_id" class="input-field" formControlName="exercise_id">
           <option value="">Selecione um exercício</option>
@@ -53,88 +64,38 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
+                <label class="label">Repetições</label>
+                <input type="number" min="1" class="input-field" formControlName="reps" />
+                @if (setGroup.controls.reps.touched && setGroup.controls.reps.invalid) {
+                  <p class="mt-1 text-xs text-red-400">Repetições obrigatórias.</p>
+                }
+              </div>
+
+              <div>
+                <label class="label">Peso (kg)</label>
+                <input type="number" min="0" step="0.5" class="input-field" formControlName="weight" />
+                @if (setGroup.controls.weight.touched && setGroup.controls.weight.invalid) {
+                  <p class="mt-1 text-xs text-red-400">Peso obrigatório.</p>
+                }
+              </div>
+
+              <div>
+                <label class="label">Duração (s)</label>
+                <input type="number" min="0" class="input-field" formControlName="duration_seconds" />
+              </div>
+
+              <div>
+                <label class="label">Distância (km)</label>
+                <input type="number" min="0" step="0.1" class="input-field" formControlName="distance" />
+              </div>
+
+              <div>
                 <label class="label">Tipo de intensidade</label>
                 <select class="input-field" formControlName="intensity_type">
                   @for (type of intensityTypeOptions; track type.value) {
                     <option [value]="type.value">{{ type.label }}</option>
                   }
                 </select>
-              </div>
-            </div>
-
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-slate-300">Informações da série</p>
-                <button type="button" class="text-sm text-primary-400" (click)="addSetInformation(setIndex)">
-                  + Adicionar bloco
-                </button>
-              </div>
-
-              <div formArrayName="informations" class="space-y-3">
-                @for (
-                  infoGroup of getInformations(setIndex).controls;
-                  track $index;
-                  let infoIndex = $index
-                ) {
-                  <div
-                    class="rounded-lg border border-slate-700 bg-slate-900/60 p-3"
-                    [formGroupName]="infoIndex"
-                  >
-                    <div class="mb-3 flex items-center justify-between">
-                      <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Bloco {{ infoIndex + 1 }}
-                      </span>
-                      @if (getInformations(setIndex).length > 1) {
-                        <button
-                          type="button"
-                          class="text-xs text-red-400"
-                          (click)="removeSetInformation(setIndex, infoIndex)"
-                        >
-                          Remover
-                        </button>
-                      }
-                    </div>
-
-                    <div class="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label class="label">Repetições</label>
-                        <input type="number" min="1" class="input-field" formControlName="reps" />
-                        @if (infoGroup.controls.reps.touched && infoGroup.controls.reps.invalid) {
-                          <p class="mt-1 text-xs text-red-400">Repetições obrigatórias.</p>
-                        }
-                      </div>
-
-                      <div>
-                        <label class="label">Peso (kg)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          class="input-field"
-                          formControlName="weight"
-                        />
-                        @if (infoGroup.controls.weight.touched && infoGroup.controls.weight.invalid) {
-                          <p class="mt-1 text-xs text-red-400">Peso obrigatório.</p>
-                        }
-                      </div>
-
-                      <div>
-                        <label class="label">Duração (s)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          class="input-field"
-                          formControlName="duration_seconds"
-                        />
-                      </div>
-
-                      <div>
-                        <label class="label">Distância (m)</label>
-                        <input type="number" min="0" step="0.1" class="input-field" formControlName="distance" />
-                      </div>
-                    </div>
-                  </div>
-                }
               </div>
             </div>
           </div>
@@ -151,6 +112,7 @@
     @if (successMessage()) {
       <p class="rounded-lg border border-primary-500/30 bg-primary-500/10 px-3 py-2 text-sm text-primary-200">
         {{ successMessage() }}
+        <a routerLink="/workouts/history" class="ml-2 underline">Ver histórico</a>
       </p>
     }
 

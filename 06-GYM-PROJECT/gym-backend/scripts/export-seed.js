@@ -7,21 +7,23 @@ import { prisma, serializeMany } from '../src/lib/prisma.js';
 const SEED_PATH = requireEnv('SEED_PATH');
 
 async function exportSeed() {
-  const [users, exercises, exercise_executions, set_executions, set_informations] =
+  const [users, exercises, workouts, workout_blocks, workout_exercises, exercise_sets] =
     await Promise.all([
       prisma.user.findMany(),
       prisma.exercise.findMany(),
-      prisma.exerciseExecution.findMany(),
-      prisma.setExecution.findMany(),
-      prisma.setInformation.findMany(),
+      prisma.workout.findMany(),
+      prisma.workoutBlock.findMany(),
+      prisma.workoutExercise.findMany(),
+      prisma.exerciseSet.findMany(),
     ]);
 
   const seed = {
     users: serializeMany(users),
     exercises: serializeMany(exercises),
-    exercise_executions: serializeMany(exercise_executions),
-    set_executions: serializeMany(set_executions),
-    set_informations: serializeMany(set_informations),
+    workouts: serializeMany(workouts),
+    workout_blocks: serializeMany(workout_blocks),
+    workout_exercises: serializeMany(workout_exercises),
+    exercise_sets: serializeMany(exercise_sets),
   };
 
   fs.mkdirSync(path.dirname(SEED_PATH), { recursive: true });

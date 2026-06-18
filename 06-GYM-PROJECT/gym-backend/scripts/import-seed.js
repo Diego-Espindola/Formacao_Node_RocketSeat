@@ -32,18 +32,20 @@ async function importSeed() {
       await tx.exercise.createMany({ data: seed.exercises.map(parseDates) });
     }
 
-    if (seed.exercise_executions?.length) {
-      await tx.exerciseExecution.createMany({
-        data: seed.exercise_executions.map(parseDates),
-      });
+    if (seed.workouts?.length) {
+      await tx.workout.createMany({ data: seed.workouts.map(parseDates) });
     }
 
-    if (seed.set_executions?.length) {
-      await tx.setExecution.createMany({ data: seed.set_executions.map(parseDates) });
+    if (seed.workout_blocks?.length) {
+      await tx.workoutBlock.createMany({ data: seed.workout_blocks.map(parseDates) });
     }
 
-    if (seed.set_informations?.length) {
-      await tx.setInformation.createMany({ data: seed.set_informations.map(parseDates) });
+    if (seed.workout_exercises?.length) {
+      await tx.workoutExercise.createMany({ data: seed.workout_exercises.map(parseDates) });
+    }
+
+    if (seed.exercise_sets?.length) {
+      await tx.exerciseSet.createMany({ data: seed.exercise_sets.map(parseDates) });
     }
   });
 

@@ -38,9 +38,10 @@ export class LoginComponent {
         this.loading.set(false);
         void this.router.navigate(['/exercises']);
       },
-      error: () => {
+      error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set('Credenciais inválidas. Tente novamente.');
+        const message = (err as { error?: { message?: string } })?.error?.message;
+        this.errorMessage.set(message ?? 'Credenciais inválidas. Tente novamente.');
       },
     });
   }
