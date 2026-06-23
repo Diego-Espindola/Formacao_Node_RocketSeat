@@ -26,6 +26,6 @@
       "prisma/generated/prisma/client.js": ["./prisma/generated/prisma/client"],
       "@prisma/client": ["./prisma/generated/prisma/client"],
     },
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "multer"]
   }
 }
