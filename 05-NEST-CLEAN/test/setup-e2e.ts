@@ -1,9 +1,12 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
 
 import { randomUUID } from 'node:crypto'
 import { execSync } from 'node:child_process'
 import { createPrismaPgAdapter } from '@/infra/database/prisma/create-prisma-pg-adapter'
 import { PrismaClient } from 'prisma/generated/prisma/client'
+
+config({ path: '.env', override: true })
+config({ path: '.env.test', override: true })
 
 let prisma: PrismaClient
 
